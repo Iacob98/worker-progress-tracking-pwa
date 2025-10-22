@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Calendar, Ruler, CheckCircle, XCircle, Clock, Image as ImageIcon, Edit, Eye } from 'lucide-react'
 import type { WorkEntry } from '@/types/models'
 import { formatMeters, formatDate } from '@/lib/utils/format'
+import { getSoilTypeLabel } from '@/lib/constants/soil-types'
 import { useRouter } from 'next/navigation'
 
 interface WorkEntryCardProps {
@@ -104,6 +105,14 @@ export function WorkEntryCard({ entry, onView }: WorkEntryCardProps) {
           <div className="text-sm">
             <span className="text-muted-foreground">Метод:</span>{' '}
             <Badge variant="outline">{METHOD_LABELS[entry.method] || entry.method}</Badge>
+          </div>
+        )}
+
+        {/* Soil Type */}
+        {entry.soilType && (
+          <div className="text-sm">
+            <span className="text-muted-foreground">Тип грунта:</span>{' '}
+            <Badge variant="outline">{getSoilTypeLabel(entry.soilType)}</Badge>
           </div>
         )}
 

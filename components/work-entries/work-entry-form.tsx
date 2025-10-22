@@ -14,7 +14,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2, AlertCircle, CheckCircle } from 'lucide-react'
 import { PhotoUpload } from '@/components/progress/photo-upload'
+import { useLinkPhotosToWorkEntry } from '@/lib/hooks/use-photos'
 import { STAGE_OPTIONS, METHOD_OPTIONS } from '@/lib/constants/stages'
+import { SOIL_TYPE_OPTIONS } from '@/lib/constants/soil-types'
 import type { Photo } from '@/types/models'
 
 const workEntrySchema = z.object({
@@ -48,6 +50,7 @@ export function WorkEntryForm({
 }: WorkEntryFormProps) {
   const { worker } = useAuth()
   const createWorkEntry = useCreateWorkEntry()
+  const linkPhotos = useLinkPhotosToWorkEntry()
   const [photos, setPhotos] = useState<Photo[]>([])
   const [selectedStage, setSelectedStage] = useState<string>('')
   const [error, setError] = useState<string | null>(null)
@@ -97,7 +100,17 @@ export function WorkEntryForm({
         approved: false,
       }
 
-      await createWorkEntry.mutateAsync(workEntry as any)
+      // Create work entry
+      const createdEntry = await createWorkEntry.mutateAsync(workEntry as any)
+
+      // Link photos to the created work entry
+      if (photos.length > 0 && createdEntry?.id) {
+        const photoIds = photos.map(p => p.id)
+        await linkPhotos.mutateAsync({
+          photoIds,
+          workEntryId: createdEntry.id
+        })
+      }
 
       // Success
       if (onSuccess) {
@@ -234,6 +247,28 @@ export function WorkEntryForm({
             {...register('cablesCount', { valueAsNumber: true })}
             placeholder="Например: 2"
           />
+        </div>
+      )}
+
+      {/* Soil Type - shown for excavation and conduit stages */}
+      {(selectedStage === 'stage_2_excavation' || selectedStage === 'stage_3_conduit') && (
+        <div className="space-y-2">
+          <Label htmlFor="soilType">Тип грунта</Label>
+          <Select
+            value={watch('soilType') || ''}
+            onValueChange={(value) => setValue('soilType', value)}
+          >
+            <SelectTrigger id="soilType">
+              <SelectValue placeholder="Выберите тип грунта" />
+            </SelectTrigger>
+            <SelectContent>
+              {SOIL_TYPE_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       )}
 

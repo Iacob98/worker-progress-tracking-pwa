@@ -123,7 +123,7 @@ export interface Photo {
   id: string
   workEntryId?: string | null // work_entry_id in DB
   cutStageId?: string | null // cut_stage_id in DB (for future cut stages)
-  url: string // url in DB - Supabase storage path
+  url: string | null // url in DB - Supabase storage path (can be null)
   ts: string // ts in DB - timestamp when photo was taken
   gpsLat?: number | null // gps_lat in DB
   gpsLon?: number | null // gps_lon in DB

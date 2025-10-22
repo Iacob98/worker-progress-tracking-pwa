@@ -14,6 +14,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2, AlertCircle, CheckCircle } from 'lucide-react'
 import { PhotoUpload } from '@/components/progress/photo-upload'
 import { STAGE_OPTIONS, METHOD_OPTIONS } from '@/lib/constants/stages'
+import { SOIL_TYPE_OPTIONS } from '@/lib/constants/soil-types'
 import type { WorkEntry, Photo } from '@/types/models'
 
 const workEntrySchema = z.object({
@@ -253,6 +254,29 @@ export function WorkEntryEditForm({ entry, onSuccess, disabled = false }: WorkEn
             placeholder="Например: 2"
             disabled={disabled}
           />
+        </div>
+      )}
+
+      {/* Soil Type - shown for excavation and conduit stages */}
+      {(selectedStage === 'stage_2_excavation' || selectedStage === 'stage_3_conduit') && (
+        <div className="space-y-2">
+          <Label htmlFor="soilType">Тип грунта</Label>
+          <Select
+            value={watch('soilType') || ''}
+            onValueChange={(value) => setValue('soilType', value)}
+            disabled={disabled}
+          >
+            <SelectTrigger id="soilType">
+              <SelectValue placeholder="Выберите тип грунта" />
+            </SelectTrigger>
+            <SelectContent>
+              {SOIL_TYPE_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       )}
 

@@ -147,6 +147,58 @@ export function usePhotoUpload() {
 }
 
 /**
+ * Hook for linking photos to a work entry
+ * Used when photos are uploaded before work entry is created
+ */
+export function useLinkPhotosToWorkEntry() {
+  const queryClient = useQueryClient()
+  const supabase = createClient()
+  const { isOffline } = useOffline()
+
+  return useMutation({
+    mutationFn: async ({
+      photoIds,
+      workEntryId
+    }: {
+      photoIds: string[]
+      workEntryId: string
+    }) => {
+      if (!photoIds || photoIds.length === 0) {
+        return
+      }
+
+      // Update local database
+      for (const photoId of photoIds) {
+        const photo = await db.photos.get(photoId)
+        if (photo) {
+          await db.photos.update(photoId, { workEntryId })
+        }
+      }
+
+      if (isOffline) {
+        // Queue update for when online
+        return
+      }
+
+      // Update in Supabase
+      const { error } = await supabase
+        .from('photos')
+        .update({ work_entry_id: workEntryId })
+        .in('id', photoIds)
+
+      if (error) {
+        console.error('Error linking photos to work entry:', error)
+        throw error
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['photos'] })
+      queryClient.invalidateQueries({ queryKey: ['work_entries'] })
+    },
+  })
+}
+
+/**
  * Hook for deleting a photo
  */
 export function useDeletePhoto() {

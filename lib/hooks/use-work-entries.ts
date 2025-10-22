@@ -7,6 +7,7 @@ import { queueEntry } from '@/lib/offline/sync'
 import type { WorkEntry } from '@/types/models'
 import { useAuth } from './use-auth'
 import { useOffline } from './use-offline'
+import { v4 as uuidv4 } from 'uuid'
 
 /**
  * Hook for fetching work entries for the current worker
@@ -499,6 +500,7 @@ export function useCreateWorkEntry() {
 
       const workEntry = {
         ...entry,
+        id: entry.id || uuidv4(), // Generate ID if not provided
         userId: worker.id,
         approved: false,
       }
@@ -507,7 +509,7 @@ export function useCreateWorkEntry() {
       if (isOffline) {
         await queueEntry(workEntry as any)
         await db.work_entries.put(workEntry as any)
-        return workEntry
+        return workEntry as WorkEntry
       }
 
       // Save to Supabase
