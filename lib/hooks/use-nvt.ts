@@ -59,6 +59,12 @@ export function useNVTs(projectId: string | null) {
         const totalLengthM = segments.reduce((sum: number, seg: any) => sum + (seg.length_planned_m || 0), 0)
         const completedLengthM = segments.reduce((sum: number, seg: any) => sum + (seg.length_done_m || 0), 0)
 
+        // Calculate status based on progress
+        let status: 'pending' | 'in_progress' | 'completed' = 'pending'
+        if (completedLengthM > 0) {
+          status = completedLengthM >= totalLengthM ? 'completed' : 'in_progress'
+        }
+
         return {
           id: c.id,
           projectId: c.project_id,
@@ -67,7 +73,7 @@ export function useNVTs(projectId: string | null) {
           address: c.address,
           latitude: c.latitude,
           longitude: c.longitude,
-          status: c.status,
+          status,
           totalLengthM,
           completedLengthM,
           segmentCount: segments.length,
@@ -132,6 +138,12 @@ export function useNVT(nvtId: string | null) {
       const totalLengthM = segments.reduce((sum: number, seg: any) => sum + (seg.length_planned_m || 0), 0)
       const completedLengthM = segments.reduce((sum: number, seg: any) => sum + (seg.length_done_m || 0), 0)
 
+      // Calculate status based on progress
+      let status: 'pending' | 'in_progress' | 'completed' = 'pending'
+      if (completedLengthM > 0) {
+        status = completedLengthM >= totalLengthM ? 'completed' : 'in_progress'
+      }
+
       // Transform data
       const nvt: NVT = {
         id: data.id,
@@ -141,7 +153,7 @@ export function useNVT(nvtId: string | null) {
         address: data.address,
         latitude: data.latitude,
         longitude: data.longitude,
-        status: data.status,
+        status,
         totalLengthM,
         completedLengthM,
         segmentCount: segments.length,
@@ -283,7 +295,6 @@ export function useSegment(segmentId: string | null) {
  * Hook for fetching houses for an NVT
  */
 export function useHouses(nvtId: string | null) {
-  const { isOffline } = useOffline()
   const supabase = createClient()
 
   return useQuery({
