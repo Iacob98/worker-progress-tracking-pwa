@@ -29,12 +29,15 @@ export function useNVTs(projectId: string | null) {
         return cached
       }
 
-      // Fetch from Supabase
+      // Fetch from Supabase with segments data
       const { data, error } = await supabase
         .from('cabinets')
         .select(`
           *,
-          segments:segments(count)
+          segments:segments(
+            length_planned_m,
+            length_done_m
+          )
         `)
         .eq('project_id', projectId)
         .order('code', { ascending: true })
@@ -50,21 +53,28 @@ export function useNVTs(projectId: string | null) {
       }
 
       // Transform and cache data
-      const nvts: NVT[] = data.map((c: any) => ({
-        id: c.id,
-        projectId: c.project_id,
-        code: c.code,
-        name: c.name,
-        address: c.address,
-        latitude: c.latitude,
-        longitude: c.longitude,
-        status: c.status,
-        totalLengthM: c.total_length_m,
-        completedLengthM: c.completed_length_m,
-        segmentCount: c.segments?.[0]?.count || 0,
-        createdAt: c.created_at,
-        updatedAt: c.updated_at,
-      }))
+      const nvts: NVT[] = data.map((c: any) => {
+        // Calculate totals from segments
+        const segments = c.segments || []
+        const totalLengthM = segments.reduce((sum: number, seg: any) => sum + (seg.length_planned_m || 0), 0)
+        const completedLengthM = segments.reduce((sum: number, seg: any) => sum + (seg.length_done_m || 0), 0)
+
+        return {
+          id: c.id,
+          projectId: c.project_id,
+          code: c.code,
+          name: c.name,
+          address: c.address,
+          latitude: c.latitude,
+          longitude: c.longitude,
+          status: c.status,
+          totalLengthM,
+          completedLengthM,
+          segmentCount: segments.length,
+          createdAt: c.created_at,
+          updatedAt: c.updated_at,
+        }
+      })
 
       // Cache NVTs for offline use
       for (const nvt of nvts) {
@@ -97,12 +107,15 @@ export function useNVT(nvtId: string | null) {
         return cached || null
       }
 
-      // Fetch from Supabase
+      // Fetch from Supabase with segments data
       const { data, error } = await supabase
         .from('cabinets')
         .select(`
           *,
-          segments:segments(count)
+          segments:segments(
+            length_planned_m,
+            length_done_m
+          )
         `)
         .eq('id', nvtId)
         .single()
@@ -114,6 +127,11 @@ export function useNVT(nvtId: string | null) {
         return cached || null
       }
 
+      // Calculate totals from segments
+      const segments = data.segments || []
+      const totalLengthM = segments.reduce((sum: number, seg: any) => sum + (seg.length_planned_m || 0), 0)
+      const completedLengthM = segments.reduce((sum: number, seg: any) => sum + (seg.length_done_m || 0), 0)
+
       // Transform data
       const nvt: NVT = {
         id: data.id,
@@ -124,9 +142,9 @@ export function useNVT(nvtId: string | null) {
         latitude: data.latitude,
         longitude: data.longitude,
         status: data.status,
-        totalLengthM: data.total_length_m,
-        completedLengthM: data.completed_length_m,
-        segmentCount: data.segments?.[0]?.count || 0,
+        totalLengthM,
+        completedLengthM,
+        segmentCount: segments.length,
         createdAt: data.created_at,
         updatedAt: data.updated_at,
       }
