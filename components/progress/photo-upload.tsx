@@ -58,9 +58,17 @@ export function PhotoUpload({
 
   const handleDelete = async (photo: Photo) => {
     try {
+      // Use filePath if available (Admin format), otherwise url
+      const path = photo.filePath || photo.url
+      if (!path) {
+        console.error('Cannot delete photo: no file path available')
+        alert('Ошибка: путь к файлу не найден')
+        return
+      }
+
       await deletePhoto.mutateAsync({
         photoId: photo.id,
-        filePath: photo.url,
+        filePath: path,
       })
       onChange(photos.filter((p) => p.id !== photo.id))
     } catch (error) {
