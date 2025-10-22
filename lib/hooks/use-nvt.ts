@@ -213,7 +213,7 @@ export function useSegments(nvtId: string | null) {
       const segments: Segment[] = data.map((s: any) => ({
         id: s.id,
         cabinetId: s.cabinet_id,
-        name: s.code || `Сегмент ${s.id.slice(0, 8)}`, // Use code as name
+        name: s.name || s.code || `Сегмент ${s.id.slice(0, 8)}`, // Prefer name, fallback to code
         lengthPlannedM: s.length_planned_m || 0,
         surface: s.surface || 'asphalt', // Default values
         area: s.area || 'urban',
@@ -271,7 +271,7 @@ export function useSegment(segmentId: string | null) {
       const segment: Segment = {
         id: data.id,
         cabinetId: data.cabinet_id,
-        name: data.code || `Сегмент ${data.id.slice(0, 8)}`,
+        name: data.name || data.code || `Сегмент ${data.id.slice(0, 8)}`,
         lengthPlannedM: data.length_planned_m || 0,
         surface: data.surface || 'asphalt',
         area: data.area || 'urban',
