@@ -1,16 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useNVT, useHouses } from '@/lib/hooks/use-nvt'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { ArrowLeft, Search, Loader2, AlertCircle } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { HouseCard } from '@/components/houses/house-card'
-import { WorkEntryForm } from '@/components/work-entries/work-entry-form'
-import { useMemo } from 'react'
 
 export default function HousesListPage() {
   const params = useParams()
@@ -23,8 +20,6 @@ export default function HousesListPage() {
 
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
-  const [isFormOpen, setIsFormOpen] = useState(false)
-  const [selectedHouseId, setSelectedHouseId] = useState<string | null>(null)
 
   // Filter houses by search query and status
   const filteredHouses = useMemo(() => {
@@ -47,13 +42,6 @@ export default function HousesListPage() {
 
     return filtered
   }, [houses, searchQuery, statusFilter])
-
-  const handleConnectHouse = (houseId: string) => {
-    setSelectedHouseId(houseId)
-    setIsFormOpen(true)
-  }
-
-  const isLoading = nvtLoading || housesLoading
 
   return (
     <div className="container mx-auto p-6 max-w-7xl">
@@ -144,7 +132,8 @@ export default function HousesListPage() {
               <HouseCard
                 key={house.id}
                 house={house}
-                onConnect={() => handleConnectHouse(house.id)}
+                projectId={projectId}
+                nvtId={nvtId}
               />
             ))}
           </div>
@@ -158,26 +147,6 @@ export default function HousesListPage() {
           </AlertDescription>
         </Alert>
       )}
-
-      {/* Connection Report Dialog */}
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Отчет о подключении дома</DialogTitle>
-          </DialogHeader>
-          {selectedHouseId && (
-            <WorkEntryForm
-              projectId={projectId}
-              houseId={selectedHouseId}
-              cabinetId={nvtId}
-              onSuccess={() => {
-                setIsFormOpen(false)
-                setSelectedHouseId(null)
-              }}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

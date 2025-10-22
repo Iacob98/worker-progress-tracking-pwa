@@ -1,5 +1,6 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -9,10 +10,13 @@ import { formatDate } from '@/lib/utils/format'
 
 interface HouseCardProps {
   house: House
-  onConnect?: () => void
+  projectId: string
+  nvtId: string
 }
 
-export function HouseCard({ house, onConnect }: HouseCardProps) {
+export function HouseCard({ house, projectId, nvtId }: HouseCardProps) {
+  const router = useRouter()
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'connected':
@@ -93,16 +97,14 @@ export function HouseCard({ house, onConnect }: HouseCardProps) {
         )}
 
         {/* Action Button */}
-        {house.connectionStatus !== 'connected' && onConnect && (
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={onConnect}
-          >
-            <ChevronRight className="mr-2 h-4 w-4" />
-            Создать отчет о подключении
-          </Button>
-        )}
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={() => router.push(`/projects/${projectId}/nvt/${nvtId}/houses/${house.id}` as any)}
+        >
+          <ChevronRight className="mr-2 h-4 w-4" />
+          Подробнее
+        </Button>
       </CardContent>
     </Card>
   )

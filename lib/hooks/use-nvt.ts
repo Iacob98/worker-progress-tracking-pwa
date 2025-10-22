@@ -437,3 +437,57 @@ export function useCreateSegment() {
     },
   })
 }
+
+/**
+ * Hook for fetching a single house by ID
+ */
+export function useHouse(houseId: string | null) {
+  const supabase = createClient()
+
+  return useQuery({
+    queryKey: ['house', houseId],
+    queryFn: async () => {
+      if (!houseId) return null
+
+      // Fetch from Supabase
+      const { data, error } = await supabase
+        .from('houses')
+        .select('*')
+        .eq('id', houseId)
+        .single()
+
+      if (error) {
+        console.error('Error fetching house:', error)
+        return null
+      }
+
+      // Build address from separate fields
+      const addressParts = [
+        data.street,
+        data.house_number,
+        data.city,
+      ].filter(Boolean)
+      const address = addressParts.length > 0 ? addressParts.join(', ') : 'Адрес не указан'
+
+      return {
+        id: data.id,
+        projectId: data.project_id,
+        cabinetId: data.cabinet_id,
+        address: address,
+        street: data.street,
+        houseNumber: data.house_number,
+        city: data.city,
+        entranceCount: data.floor_count || 0,
+        apartmentCount: data.apartment_count || 0,
+        connectionStatus: data.status || 'pending',
+        status: data.status,
+        plannedConnectionDate: data.planned_connection_date ? new Date(data.planned_connection_date) : undefined,
+        actualConnectionDate: data.actual_connection_date ? new Date(data.actual_connection_date) : undefined,
+        createdAt: data.created_at,
+        updatedAt: data.updated_at,
+      }
+    },
+    enabled: !!houseId,
+    staleTime: 5 * 60 * 1000,
+  })
+}

@@ -35,25 +35,69 @@ export function RejectionAlert({ entry }: RejectionAlertProps) {
   })
 
   // Filter photos to show only admin rejection photos
-  // Admin photos are added AFTER rejection, so filter by timestamp
+  // Admin photos are identified by the is_after_photo flag or photo_type='issue'
+  // The Admin API should set is_after_photo=true when uploading rejection photos
   const allPhotos = entry.photos || []
   const rejectionTimestamp = entry.rejectedAt ? new Date(entry.rejectedAt).getTime() : 0
 
-  const adminPhotos = allPhotos.filter(photo => {
-    // Check if photo was created after rejection
-    const photoDate = photo.ts || photo.created_at
-    if (!photoDate) return false
-
-    try {
-      const photoTimestamp = new Date(photoDate).getTime()
-      // Check for valid timestamp (NaN check)
-      if (isNaN(photoTimestamp)) return false
-
-      return photoTimestamp > rejectionTimestamp
-    } catch {
-      return false
-    }
+  console.log('🔍 RejectionAlert - Filtering photos:', {
+    entryId: entry.id,
+    totalPhotos: allPhotos.length,
+    rejectionTimestamp: new Date(rejectionTimestamp).toISOString(),
+    allPhotos: allPhotos.map(p => ({
+      id: p.id,
+      label: p.label,
+      photoType: (p as any).photoType,
+      isAfterPhoto: (p as any).isAfterPhoto,
+      createdAt: (p as any).createdAt,
+      ts: p.ts
+    }))
   })
+
+  const adminPhotos = allPhotos.filter(photo => {
+    // Method 1: Check is_after_photo flag (primary method for Admin API)
+    const isMarkedAsAfter = (photo as any).isAfterPhoto === true
+
+    // Method 2: Check photo_type='issue' OR 'problem' (Admin API uses 'problem')
+    const photoType = (photo as any).photoType
+    const hasIssueType = photoType === 'issue' || photoType === 'problem'
+
+    // Method 3: Check label='after' (for Worker PWA uploads)
+    const hasAfterLabel = photo.label === 'after'
+
+    // Method 4: Timestamp check (fallback - photos uploaded after rejection)
+    let isAfterRejection = false
+    const photoDate = photo.ts || (photo as any).createdAt || (photo as any).taken_at
+    if (photoDate && rejectionTimestamp > 0) {
+      try {
+        const photoTimestamp = new Date(photoDate).getTime()
+        if (!isNaN(photoTimestamp)) {
+          // 5 second tolerance for clock differences
+          isAfterRejection = photoTimestamp >= rejectionTimestamp - 5000
+        }
+      } catch (error) {
+        console.error(`Error checking photo ${photo.id} timestamp:`, error)
+      }
+    }
+
+    const isAdminPhoto = isMarkedAsAfter || hasIssueType || hasAfterLabel || isAfterRejection
+
+    console.log(`Photo ${photo.id}:`, {
+      label: photo.label,
+      photoType: (photo as any).photoType,
+      isAfterPhoto: (photo as any).isAfterPhoto,
+      timestamp: photoDate ? new Date(photoDate).toISOString() : 'none',
+      isMarkedAsAfter,
+      hasIssueType,
+      hasAfterLabel,
+      isAfterRejection,
+      isAdminPhoto
+    })
+
+    return isAdminPhoto
+  })
+
+  console.log('📷 Admin rejection photos found:', adminPhotos.length)
 
   const getPhotoUrl = (photo: any) => {
     // If photo has full URL already, use it

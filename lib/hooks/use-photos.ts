@@ -11,6 +11,7 @@ import type { Photo } from '@/types/models'
 
 /**
  * Hook for uploading photos with compression and offline support
+ * Uses direct Supabase Storage upload for reliability
  */
 export function usePhotoUpload() {
   const queryClient = useQueryClient()
@@ -44,10 +45,6 @@ export function usePhotoUpload() {
 
       const compressedFile = await imageCompression(file, options)
 
-      const photoId = uuidv4()
-      const filename = `${photoId}.jpg`
-      const filePath = `${projectId}/${workEntryId || 'temp'}/${filename}`
-
       // Get geolocation if available
       let latitude: number | undefined
       let longitude: number | undefined
@@ -67,6 +64,15 @@ export function usePhotoUpload() {
         }
       }
 
+      const photoId = uuidv4()
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5)
+      const filename = `${timestamp}_${photoId}.jpg`
+
+      // New path structure: work-entries/{workEntryId}/{filename}
+      const filePath = workEntryId
+        ? `work-entries/${workEntryId}/${filename}`
+        : `${projectId}/temp/${filename}`
+
       const photoData: Photo = {
         id: photoId,
         workEntryId,
@@ -75,7 +81,7 @@ export function usePhotoUpload() {
         ts: new Date().toISOString(),
         gpsLat: latitude,
         gpsLon: longitude,
-        authorUserId: undefined, // Will be set on server
+        authorUserId: undefined,
         label: photoType === 'before' ? 'before' : photoType === 'after' ? 'after' : 'during',
       }
 
@@ -86,7 +92,7 @@ export function usePhotoUpload() {
         return photoData
       }
 
-      // Upload to Supabase Storage
+      // Upload to Supabase Storage with new path structure
       const { error: uploadError } = await supabase.storage
         .from('work-photos')
         .upload(filePath, compressedFile, {
@@ -105,33 +111,19 @@ export function usePhotoUpload() {
       // Save metadata to database
       const { error: dbError } = await supabase.from('photos').insert({
         id: photoId,
-        project_id: projectId,
         work_entry_id: workEntryId,
         url: filePath,
         ts: new Date().toISOString(),
         gps_lat: latitude,
         gps_lon: longitude,
         label: photoType === 'before' ? 'before' : photoType === 'after' ? 'after' : 'during',
+        is_before_photo: photoType === 'before',
+        is_after_photo: photoType === 'after',
+        photo_type: photoType === 'after' ? 'issue' : 'general',
       })
 
       if (dbError) {
-        console.error('Error saving photo metadata:', {
-          error: dbError,
-          message: dbError.message,
-          details: dbError.details,
-          hint: dbError.hint,
-          code: dbError.code,
-          insertData: {
-            id: photoId,
-            project_id: projectId,
-            work_entry_id: workEntryId,
-            url: filePath,
-            ts: new Date().toISOString(),
-            gps_lat: latitude,
-            gps_lon: longitude,
-            label: photoType === 'before' ? 'before' : photoType === 'after' ? 'after' : 'during',
-          }
-        })
+        console.error('Error saving photo metadata:', dbError)
         throw dbError
       }
 

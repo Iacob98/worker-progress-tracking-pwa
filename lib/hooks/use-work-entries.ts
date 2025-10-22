@@ -124,11 +124,16 @@ export function useWorkEntries(filters?: {
           workEntryId: p.work_entry_id,
           cutStageId: p.cut_stage_id,
           url: p.url,
-          ts: p.ts,
+          ts: p.ts || p.created_at || p.taken_at,
           gpsLat: p.gps_lat,
           gpsLon: p.gps_lon,
           authorUserId: p.author_user_id,
           label: p.label,
+          photoType: p.photo_type,
+          isAfterPhoto: p.is_after_photo,
+          isBeforePhoto: p.is_before_photo,
+          filePath: p.file_path,
+          createdAt: p.created_at,
         })),
       }))
 
@@ -271,11 +276,16 @@ export function useWorkEntriesForApproval(approved?: boolean) {
           workEntryId: p.work_entry_id,
           cutStageId: p.cut_stage_id,
           url: p.url,
-          ts: p.ts,
+          ts: p.ts || p.created_at || p.taken_at,
           gpsLat: p.gps_lat,
           gpsLon: p.gps_lon,
           authorUserId: p.author_user_id,
           label: p.label,
+          photoType: p.photo_type,
+          isAfterPhoto: p.is_after_photo,
+          isBeforePhoto: p.is_before_photo,
+          filePath: p.file_path,
+          createdAt: p.created_at,
         })),
       }))
 
@@ -465,11 +475,16 @@ export function useSegmentWorkEntries(segmentId: string | null) {
           workEntryId: p.work_entry_id,
           cutStageId: p.cut_stage_id,
           url: p.url,
-          ts: p.ts,
+          ts: p.ts || p.created_at || p.taken_at,
           gpsLat: p.gps_lat,
           gpsLon: p.gps_lon,
           authorUserId: p.author_user_id,
           label: p.label,
+          photoType: p.photo_type,
+          isAfterPhoto: p.is_after_photo,
+          isBeforePhoto: p.is_before_photo,
+          filePath: p.file_path,
+          createdAt: p.created_at,
         })),
       }))
 
@@ -555,6 +570,7 @@ export function useCreateWorkEntry() {
       // Invalidate work entries queries
       queryClient.invalidateQueries({ queryKey: ['work_entries'] })
       queryClient.invalidateQueries({ queryKey: ['segments'] })
+      queryClient.invalidateQueries({ queryKey: ['houses'] })
     },
   })
 }
