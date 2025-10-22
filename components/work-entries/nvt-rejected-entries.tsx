@@ -4,33 +4,36 @@ import { useWorkEntries } from '@/lib/hooks/use-work-entries'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { AlertCircle, Edit, Calendar, Ruler } from 'lucide-react'
+import { AlertCircle, Edit, Calendar, Ruler, Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import type { WorkEntry } from '@/types/models'
 
-interface RejectedEntriesListProps {
+interface NVTRejectedEntriesProps {
   projectId: string
+  nvtId: string
 }
 
 /**
- * Component that displays rejected work entries at the top
- * Allows worker to quickly see and fix rejected works
+ * Component that displays rejected work entries for a specific NVT
+ * Shows entries grouped by segment
  */
-export function RejectedEntriesList({ projectId }: RejectedEntriesListProps) {
+export function NVTRejectedEntries({ projectId, nvtId }: NVTRejectedEntriesProps) {
   const router = useRouter()
   const { data: entries, isLoading } = useWorkEntries({
     projectId,
   })
 
-  // Filter only rejected entries
-  const rejectedEntries = entries?.filter(entry => entry.rejectedAt) || []
+  // Filter only rejected entries for this NVT (by cabinetId)
+  const rejectedEntries = entries?.filter(entry =>
+    entry.rejectedAt && entry.cabinetId === nvtId
+  ) || []
 
   if (isLoading) {
     return (
       <Card className="border-red-200 bg-red-50">
         <CardHeader>
           <CardTitle className="text-red-800 flex items-center gap-2">
-            <AlertCircle className="h-5 w-5" />
+            <Loader2 className="h-5 w-5 animate-spin" />
             Загрузка отклоненных работ...
           </CardTitle>
         </CardHeader>
@@ -43,7 +46,7 @@ export function RejectedEntriesList({ projectId }: RejectedEntriesListProps) {
   }
 
   return (
-    <Card className="border-red-300 bg-red-50 shadow-lg">
+    <Card className="border-red-300 bg-red-50 shadow-lg mb-8">
       <CardHeader className="pb-3">
         <CardTitle className="text-red-900 flex items-center gap-2">
           <AlertCircle className="h-5 w-5" />
@@ -101,19 +104,12 @@ function RejectedEntryCard({ entry, onEdit }: RejectedEntryCardProps) {
             </span>
           </div>
 
-          {/* NVT and Segment info */}
-          <div className="flex items-center gap-3 text-sm text-gray-700 mt-2">
-            {entry.cabinet && (
-              <div className="font-medium text-gray-900">
-                НВТ: {entry.cabinet.code}
-              </div>
-            )}
-            {entry.segment && entry.segment.name && (
-              <div className="text-gray-600">
-                Сегмент: {entry.segment.name}
-              </div>
-            )}
-          </div>
+          {/* Segment info */}
+          {entry.segment && entry.segment.name && (
+            <div className="text-sm font-medium text-gray-900 mt-2">
+              Сегмент: {entry.segment.name}
+            </div>
+          )}
 
           <div className="flex items-center gap-4 text-sm text-gray-700 mt-2">
             <div className="flex items-center gap-1">

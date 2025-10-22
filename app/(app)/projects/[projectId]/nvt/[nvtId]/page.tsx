@@ -12,6 +12,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { formatMeters, formatPercentage } from '@/lib/utils/format'
 import { calculateProgress } from '@/lib/utils/calculations'
 import { SegmentCard } from '@/components/segments/segment-card'
+import { NVTRejectedEntries } from '@/components/work-entries/nvt-rejected-entries'
 
 export default function NVTDetailPage() {
   const params = useParams()
@@ -76,16 +77,19 @@ export default function NVTDetailPage() {
           <div className="text-sm text-muted-foreground mb-1">
             {project?.name}
           </div>
-          <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-3xl font-bold">{nvt.code}</h1>
-            <Badge variant={statusColors[nvt.status]}>
-              {statusLabels[nvt.status]}
-            </Badge>
+          <div className="mb-2">
+            <h1 className="text-3xl font-bold mb-2">
+              {nvt.name || nvt.code}
+            </h1>
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-muted-foreground">
+                Код: {nvt.code}
+              </span>
+              <Badge variant={statusColors[nvt.status]}>
+                {statusLabels[nvt.status]}
+              </Badge>
+            </div>
           </div>
-
-          {nvt.name && (
-            <p className="text-xl text-muted-foreground mb-2">{nvt.name}</p>
-          )}
 
           {nvt.address && (
             <div className="flex items-center gap-2 text-muted-foreground">
@@ -119,6 +123,9 @@ export default function NVTDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Rejected Entries Alert */}
+      <NVTRejectedEntries projectId={projectId} nvtId={nvtId} />
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">

@@ -12,6 +12,7 @@ import { ArrowLeft, Plus, Loader2, AlertCircle, MapPin, Ruler } from 'lucide-rea
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { WorkEntryCard } from '@/components/work-entries/work-entry-card'
 import { WorkEntryForm } from '@/components/work-entries/work-entry-form'
+import { SegmentRejectedEntries } from '@/components/work-entries/segment-rejected-entries'
 import { formatMeters } from '@/lib/utils/format'
 
 export default function SegmentDetailPage() {
@@ -214,6 +215,9 @@ export default function SegmentDetailPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Rejected Entries Alert */}
+      <SegmentRejectedEntries segmentId={segmentId} />
 
       {/* Work Entries Section */}
       <div>

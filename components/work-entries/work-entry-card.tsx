@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Calendar, Ruler, User, CheckCircle, XCircle, Clock, Image as ImageIcon, Edit, Eye } from 'lucide-react'
+import { Calendar, Ruler, CheckCircle, XCircle, Clock, Image as ImageIcon, Edit, Eye } from 'lucide-react'
 import type { WorkEntry } from '@/types/models'
 import { formatMeters, formatDate } from '@/lib/utils/format'
 import { useRouter } from 'next/navigation'
@@ -42,6 +42,16 @@ export function WorkEntryCard({ entry, onView }: WorkEntryCardProps) {
   }
 
   const getApprovalBadge = () => {
+    // Check if rejected (has rejectedAt timestamp)
+    if (entry.rejectedAt) {
+      return (
+        <Badge variant="destructive" className="bg-red-600">
+          <XCircle className="h-3 w-3 mr-1" />
+          Отклонено
+        </Badge>
+      )
+    }
+
     if (entry.approved) {
       return (
         <Badge className="bg-green-500">
@@ -49,16 +59,9 @@ export function WorkEntryCard({ entry, onView }: WorkEntryCardProps) {
           Утверждено
         </Badge>
       )
-    } else if (entry.approvedBy && !entry.approved) {
-      return (
-        <Badge variant="destructive">
-          <XCircle className="h-3 w-3 mr-1" />
-          Отклонено
-        </Badge>
-      )
     } else {
       return (
-        <Badge variant="secondary">
+        <Badge variant="secondary" className="bg-yellow-500 text-white">
           <Clock className="h-3 w-3 mr-1" />
           На проверке
         </Badge>

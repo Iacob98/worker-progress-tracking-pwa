@@ -104,9 +104,20 @@ export interface WorkEntry {
   rejectedBy?: string | null // rejected_by in DB
   rejectedAt?: string | null // rejected_at in DB
   photos?: Photo[]
+  // Populated from joins
+  cabinet?: {
+    id: string
+    code: string
+    name: string | null
+  } | null
+  segment?: {
+    id: string
+    name: string | null
+  } | null
 }
 
 export type PhotoLabel = 'before' | 'during' | 'after' | 'instrument' | 'other'
+export type PhotoType = 'general' | 'progress' | 'quality' | 'safety' | 'problem' | 'completion'
 
 export interface Photo {
   id: string
@@ -118,6 +129,10 @@ export interface Photo {
   gpsLon?: number | null // gps_lon in DB
   authorUserId?: string | null // author_user_id in DB
   label?: PhotoLabel | null // label in DB
+  photoType?: PhotoType | null // photo_type in DB - from Admin system
+  filename?: string | null // filename in DB - from Admin system
+  filePath?: string | null // file_path in DB - Admin format path
+  created_at?: string // created_at in DB - when photo record was created
 }
 
 export interface House {

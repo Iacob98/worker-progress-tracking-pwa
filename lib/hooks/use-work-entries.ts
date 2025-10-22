@@ -41,7 +41,7 @@ export function useWorkEntries(filters?: {
         return cached as WorkEntry[]
       }
 
-      // Fetch from Supabase
+      // Fetch from Supabase (without joins to avoid errors)
       let query = supabase
         .from('work_entries')
         .select(`
@@ -74,6 +74,7 @@ export function useWorkEntries(filters?: {
           hint: error?.hint,
           code: error?.code
         })
+        console.error('Full error object:', JSON.stringify(error, null, 2))
         // Fall back to cached data
         let cachedQuery = db.work_entries.where('userId').equals(worker.id)
         if (filters?.projectId) {
@@ -130,12 +131,52 @@ export function useWorkEntries(filters?: {
         })),
       }))
 
+      // Fetch cabinet and segment data for entries that have them
+      const cabinetIds = [...new Set(entries.filter(e => e.cabinetId).map(e => e.cabinetId!))]
+      const segmentIds = [...new Set(entries.filter(e => e.segmentId).map(e => e.segmentId!))]
+
+      let cabinetsMap = new Map<string, any>()
+      let segmentsMap = new Map<string, any>()
+
+      if (cabinetIds.length > 0) {
+        const { data: cabinets } = await supabase
+          .from('cabinets')
+          .select('id, code, name')
+          .in('id', cabinetIds)
+
+        if (cabinets) {
+          cabinets.forEach(c => cabinetsMap.set(c.id, c))
+        }
+      }
+
+      if (segmentIds.length > 0) {
+        const { data: segments } = await supabase
+          .from('segments')
+          .select('id, name')
+          .in('id', segmentIds)
+
+        if (segments) {
+          segments.forEach(s => segmentsMap.set(s.id, s))
+        }
+      }
+
+      // Attach cabinet and segment data to entries
+      const enrichedEntries = entries.map(entry => ({
+        ...entry,
+        cabinet: entry.cabinetId && cabinetsMap.has(entry.cabinetId)
+          ? cabinetsMap.get(entry.cabinetId)
+          : null,
+        segment: entry.segmentId && segmentsMap.has(entry.segmentId)
+          ? segmentsMap.get(entry.segmentId)
+          : null,
+      }))
+
       // Cache entries
-      for (const entry of entries) {
+      for (const entry of enrichedEntries) {
         await db.work_entries.put(entry)
       }
 
-      return entries
+      return enrichedEntries
     },
     enabled: !!worker,
     staleTime: 2 * 60 * 1000, // 2 minutes

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { AlertCircle, Image as ImageIcon, X } from 'lucide-react'
+import { AlertCircle, Image as ImageIcon } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import type { WorkEntry } from '@/types/models'
@@ -34,8 +34,27 @@ export function RejectionAlert({ entry }: RejectionAlertProps) {
     minute: '2-digit'
   })
 
-  // Get photo URLs - support both Admin and Worker PWA formats
-  const photos = entry.photos || []
+  // Filter photos to show only admin rejection photos
+  // Admin photos are added AFTER rejection, so filter by timestamp
+  const allPhotos = entry.photos || []
+  const rejectionTimestamp = entry.rejectedAt ? new Date(entry.rejectedAt).getTime() : 0
+
+  const adminPhotos = allPhotos.filter(photo => {
+    // Check if photo was created after rejection
+    const photoDate = photo.ts || photo.created_at
+    if (!photoDate) return false
+
+    try {
+      const photoTimestamp = new Date(photoDate).getTime()
+      // Check for valid timestamp (NaN check)
+      if (isNaN(photoTimestamp)) return false
+
+      return photoTimestamp > rejectionTimestamp
+    } catch {
+      return false
+    }
+  })
+
   const getPhotoUrl = (photo: any) => {
     // If photo has full URL already, use it
     if (photo.url && photo.url.startsWith('http')) {
@@ -66,14 +85,14 @@ export function RejectionAlert({ entry }: RejectionAlertProps) {
           </p>
 
           {/* Admin photos */}
-          {photos.length > 0 && (
+          {adminPhotos.length > 0 && (
             <div className="space-y-2 pt-2 border-t border-red-300">
               <div className="flex items-center gap-2 text-sm text-red-600">
                 <ImageIcon className="h-4 w-4" />
-                <span>Фото от администратора ({photos.length}):</span>
+                <span>Фото от администратора ({adminPhotos.length}):</span>
               </div>
               <div className="grid grid-cols-3 gap-2">
-                {photos.map((photo) => {
+                {adminPhotos.map((photo) => {
                   const photoUrl = getPhotoUrl(photo)
                   if (!photoUrl) return null
 
