@@ -63,7 +63,7 @@ export interface Segment {
   status: 'open' | 'in_progress' | 'done'
 }
 
-// Stage codes from admin DB - expandable in future
+// Stage codes from admin DB - aligned with technical specification
 export type StageCode =
   | 'stage_1_marking'
   | 'stage_2_excavation'
@@ -71,10 +71,7 @@ export type StageCode =
   | 'stage_4_cable'
   | 'stage_5_splice'
   | 'stage_6_test'
-  | 'stage_7_connect'
-  | 'stage_8_final'
   | 'stage_9_backfill'
-  | 'stage_10_surface'
 
 export type WorkMethod = 'mole' | 'hand' | 'excavator' | 'trencher' | 'documentation'
 

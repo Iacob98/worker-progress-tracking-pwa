@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { AlertCircle, Edit, Calendar, Ruler, Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import type { WorkEntry } from '@/types/models'
+import { STAGE_LABELS, METHOD_LABELS } from '@/lib/constants/stages'
 
 interface NVTRejectedEntriesProps {
   projectId: string

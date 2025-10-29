@@ -12,6 +12,7 @@ import { PhotoUpload } from './photo-upload'
 import { Loader2, Save, Send, AlertCircle } from 'lucide-react'
 import type { Segment, Photo, StageCode, WorkMethod } from '@/types/models'
 import { z } from 'zod'
+import { STAGE_LABELS, METHOD_LABELS } from '@/lib/constants/stages'
 
 const ProgressEntryFormSchema = z.object({
   stageCode: z.string().min(1, 'Выберите этап работы'),
@@ -32,27 +33,6 @@ interface ProgressEntryFormProps {
   projectId: string
   onSubmit: (data: any, isDraft: boolean) => Promise<void>
   onCancel: () => void
-}
-
-const STAGE_LABELS: Record<StageCode, string> = {
-  stage_1_marking: 'Разметка',
-  stage_2_excavation: 'Вскопка/Экскавация',
-  stage_3_conduit: 'Прокладка защитной трубы',
-  stage_4_cable: 'Прокладка кабеля',
-  stage_5_splice: 'Сплайсинг/Соединение',
-  stage_6_test: 'Тестирование',
-  stage_7_connect: 'Подключение',
-  stage_8_final: 'Финальная проверка',
-  stage_9_backfill: 'Засыпка',
-  stage_10_surface: 'Восстановление покрытия',
-}
-
-const METHOD_LABELS: Record<WorkMethod, string> = {
-  mole: 'Прокол (кроты)',
-  hand: 'Ручная копка',
-  excavator: 'Экскаватор',
-  trencher: 'Траншеекопатель',
-  documentation: 'Документация',
 }
 
 export function ProgressEntryForm({

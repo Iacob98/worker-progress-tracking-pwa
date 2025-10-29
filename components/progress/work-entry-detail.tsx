@@ -10,6 +10,7 @@ import type { WorkEntry } from '@/types/models'
 import { useState } from 'react'
 import { WorkEntryStatus } from './work-entry-status'
 import { useAuth } from '@/lib/hooks/use-auth'
+import { STAGE_LABELS, METHOD_LABELS } from '@/lib/constants/stages'
 
 interface WorkEntryDetailProps {
   entry: WorkEntry
@@ -21,26 +22,6 @@ interface WorkEntryDetailProps {
 }
 
 // Stage code labels in Russian
-const STAGE_LABELS: Record<string, string> = {
-  stage_1_marking: 'Разметка',
-  stage_2_excavation: 'Вскопка/Экскавация',
-  stage_3_conduit: 'Прокладка защитной трубы',
-  stage_4_cable: 'Прокладка кабеля',
-  stage_5_splice: 'Сплайсинг/Соединение',
-  stage_6_test: 'Тестирование',
-  stage_7_connect: 'Подключение',
-  stage_8_final: 'Финальная проверка',
-  stage_9_backfill: 'Засыпка',
-  stage_10_surface: 'Восстановление покрытия',
-}
-
-const METHOD_LABELS: Record<string, string> = {
-  mole: 'Прокол (кроты)',
-  hand: 'Ручная копка',
-  excavator: 'Экскаватор',
-  trencher: 'Траншеекопатель',
-  documentation: 'Документация',
-}
 
 export function WorkEntryDetail({ entry, isOpen, onClose, onEdit, onDelete, onStatusChange }: WorkEntryDetailProps) {
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null)

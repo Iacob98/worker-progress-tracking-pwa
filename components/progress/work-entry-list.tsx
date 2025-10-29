@@ -6,24 +6,12 @@ import { Button } from '@/components/ui/button'
 import { formatDate, formatMeters } from '@/lib/utils/format'
 import { CheckCircle2, XCircle, Eye } from 'lucide-react'
 import type { WorkEntry, StageCode } from '@/types/models'
+import { STAGE_LABELS, METHOD_LABELS } from '@/lib/constants/stages'
 
 interface WorkEntryListProps {
   entries: WorkEntry[]
   onView: (entry: WorkEntry) => void
   onEdit?: (entry: WorkEntry) => void
-}
-
-const STAGE_LABELS: Record<StageCode, string> = {
-  stage_1_marking: 'Разметка',
-  stage_2_excavation: 'Вскопка',
-  stage_3_conduit: 'Прокладка трубы',
-  stage_4_cable: 'Прокладка кабеля',
-  stage_5_splice: 'Сплайсинг',
-  stage_6_test: 'Тестирование',
-  stage_7_connect: 'Подключение',
-  stage_8_final: 'Финальная проверка',
-  stage_9_backfill: 'Засыпка',
-  stage_10_surface: 'Восстановление покрытия',
 }
 
 export function WorkEntryList({ entries, onView, onEdit }: WorkEntryListProps) {
