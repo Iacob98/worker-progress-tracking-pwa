@@ -201,3 +201,32 @@ export interface SyncQueueItem {
   createdAt: Date
   updatedAt: Date
 }
+
+// Worker Documents - личные документы работников
+export type WorkerDocumentCategory =
+  | 'contract'      // Договор
+  | 'certificate'   // Сертификат
+  | 'instruction'   // Инструкция
+  | 'policy'        // Политика компании
+  | 'safety'        // Техника безопасности
+  | 'training'      // Обучающие материалы
+  | 'personal'      // Личные документы
+  | 'other'         // Прочее
+
+export interface WorkerDocument {
+  id: string
+  userId: string                          // user_id in DB - владелец документа
+  filename: string                        // filename in DB - имя файла в storage
+  originalFilename: string                // original_filename in DB - оригинальное имя
+  fileSize: number                        // file_size in DB - размер в байтах
+  mimeType: string                        // mime_type in DB - MIME тип файла
+  bucketName: string                      // bucket_name in DB - всегда 'worker-documents'
+  filePath: string                        // file_path in DB - путь в storage
+  fileUrl?: string | null                 // file_url in DB - публичный URL (если есть)
+  category: WorkerDocumentCategory        // category in DB - категория документа
+  title: string                           // title in DB - название документа
+  description?: string | null             // description in DB - описание
+  metadata?: Record<string, any>          // metadata in DB - дополнительные данные (jsonb)
+  createdAt: string                       // created_at in DB
+  updatedAt: string                       // updated_at in DB
+}

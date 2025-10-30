@@ -5,7 +5,7 @@ import { useProjects } from '@/lib/hooks/use-projects'
 import { Button } from '@/components/ui/button'
 import { ProjectCard } from '@/components/projects/project-card'
 import { useRouter } from 'next/navigation'
-import { Loader2, AlertCircle } from 'lucide-react'
+import { Loader2, AlertCircle, FileText } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
 export default function ProjectsPage() {
@@ -27,9 +27,19 @@ export default function ProjectsPage() {
             Добро пожаловать, {worker?.firstName || worker?.email}
           </p>
         </div>
-        <Button variant="outline" onClick={handleLogout}>
-          Выйти
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => router.push('/documents')}
+            className="flex items-center gap-2"
+          >
+            <FileText className="h-4 w-4" />
+            Мои документы
+          </Button>
+          <Button variant="outline" onClick={handleLogout}>
+            Выйти
+          </Button>
+        </div>
       </div>
 
       {/* Loading State */}
