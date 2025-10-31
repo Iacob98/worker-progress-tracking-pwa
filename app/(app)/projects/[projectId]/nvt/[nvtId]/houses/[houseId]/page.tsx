@@ -3,11 +3,12 @@
 import { useParams, useRouter } from 'next/navigation'
 import { useHouse } from '@/lib/hooks/use-nvt'
 import { useWorkEntries } from '@/lib/hooks/use-work-entries'
+import { useHousePlan } from '@/lib/hooks/use-house-plan'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { ArrowLeft, Home, Calendar, Loader2, AlertCircle, MapPin, Building } from 'lucide-react'
+import { ArrowLeft, Home, Calendar, Loader2, AlertCircle, MapPin, Building, Eye, FileText } from 'lucide-react'
 import { formatDate } from '@/lib/utils/format'
 import { WorkEntryCard } from '@/components/work-entries/work-entry-card'
 
@@ -20,6 +21,16 @@ export default function HouseDetailsPage() {
 
   const { data: house, isLoading: houseLoading } = useHouse(houseId)
   const { data: workEntries, isLoading: entriesLoading } = useWorkEntries({ projectId })
+  const { data: housePlan, isLoading: planLoading } = useHousePlan(houseId)
+
+  // Debug logging for house plan
+  console.log('🏠 House Plan Debug:', {
+    houseId,
+    planLoading,
+    hasPlanData: !!housePlan,
+    planFileUrl: housePlan?.plan_file_url,
+    fullPlanData: housePlan
+  })
 
   // Filter work entries for this house
   const houseWorkEntries = workEntries?.filter(entry => entry.houseId === houseId) || []
@@ -96,6 +107,39 @@ export default function HouseDetailsPage() {
           </div>
         </div>
       </div>
+
+      {/* Connection Plan Button */}
+      {housePlan?.plan_file_url && (
+        <div className="mb-8">
+          <div className="p-4 border rounded-lg bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 mt-1">
+                <FileText className="h-5 w-5 text-green-600 dark:text-green-400" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-medium text-sm mb-1">
+                  План подключения
+                </h3>
+                {housePlan.plan_description && (
+                  <p className="text-xs text-muted-foreground mb-3">
+                    {housePlan.plan_description}
+                  </p>
+                )}
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => window.open(housePlan.plan_file_url!, '_blank', 'noopener,noreferrer')}
+                  className="gap-2 w-full sm:w-auto bg-green-600 hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-700"
+                  disabled={planLoading}
+                >
+                  <Eye className="h-4 w-4" />
+                  {housePlan.plan_title || 'Просмотр плана подключения'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* House Info */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">

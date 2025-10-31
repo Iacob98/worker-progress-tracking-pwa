@@ -193,14 +193,22 @@ export function useDownloadDocument() {
 
   return async (document: WorkerDocument): Promise<void> => {
     try {
+      console.log('📥 Trying to download:', document.filePath)
+
       // Get signed URL for download
       const { data, error } = await supabase.storage
         .from(WORKER_DOCUMENTS_BUCKET)
         .createSignedUrl(document.filePath, 60) // 60 seconds expiry
 
       if (error) {
-        console.error('Error creating signed URL:', error)
-        throw new Error('Не удалось создать ссылку для скачивания')
+        console.error('❌ Error creating signed URL:', error)
+        console.error('❌ Document details:', {
+          id: document.id,
+          title: document.title,
+          filePath: document.filePath,
+          bucket: WORKER_DOCUMENTS_BUCKET
+        })
+        throw new Error('Файл не найден в хранилище. Возможно, он был удален.')
       }
 
       if (!data?.signedUrl) {
@@ -225,7 +233,7 @@ export function useDownloadDocument() {
       window.document.body.removeChild(link)
       window.URL.revokeObjectURL(url)
 
-      console.log('Document downloaded successfully:', document.originalFilename)
+      console.log('✅ Document downloaded successfully:', document.originalFilename)
     } catch (error) {
       console.error('Error downloading document:', error)
       throw error
@@ -241,19 +249,41 @@ export function useGetDocumentUrl() {
 
   return async (document: WorkerDocument): Promise<string> => {
     try {
+      console.log('📄 Trying to get signed URL for:', document.filePath)
+
       const { data, error } = await supabase.storage
         .from(WORKER_DOCUMENTS_BUCKET)
         .createSignedUrl(document.filePath, 3600) // 1 hour expiry
 
       if (error) {
-        console.error('Error creating signed URL:', error)
-        throw new Error('Не удалось создать ссылку для просмотра')
+        console.error('❌ Error creating signed URL:', error)
+        console.error('❌ Document details:', {
+          id: document.id,
+          title: document.title,
+          filePath: document.filePath,
+          bucket: WORKER_DOCUMENTS_BUCKET
+        })
+
+        // Check if file exists by trying to get public URL instead
+        const publicUrl = supabase.storage
+          .from(WORKER_DOCUMENTS_BUCKET)
+          .getPublicUrl(document.filePath)
+
+        console.log('🔍 Trying public URL instead:', publicUrl.data.publicUrl)
+
+        // Return public URL as fallback
+        if (publicUrl.data.publicUrl) {
+          return publicUrl.data.publicUrl
+        }
+
+        throw new Error('Файл не найден в хранилище. Возможно, он был удален.')
       }
 
       if (!data?.signedUrl) {
         throw new Error('Ссылка для просмотра не получена')
       }
 
+      console.log('✅ Got signed URL successfully')
       return data.signedUrl
     } catch (error) {
       console.error('Error getting document URL:', error)
