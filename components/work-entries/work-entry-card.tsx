@@ -7,32 +7,12 @@ import { Calendar, Ruler, CheckCircle, XCircle, Clock, Image as ImageIcon, Edit,
 import type { WorkEntry } from '@/types/models'
 import { formatMeters, formatDate } from '@/lib/utils/format'
 import { getSoilTypeLabel } from '@/lib/constants/soil-types'
+import { STAGE_LABELS, METHOD_LABELS } from '@/lib/constants/stages'
 import { useRouter } from 'next/navigation'
 
 interface WorkEntryCardProps {
   entry: WorkEntry
   onView?: () => void
-}
-
-const STAGE_LABELS: Record<string, string> = {
-  stage_1_marking: '1. Разметка',
-  stage_2_excavation: '2. Копка',
-  stage_3_conduit: '3. Установка труб',
-  stage_4_cable: '4. Прокладка кабеля',
-  stage_5_splice: '5. Сварка',
-  stage_6_test: '6. Тестирование',
-  stage_7_connect: '7. Подключение',
-  stage_8_final: '8. Финальная проверка',
-  stage_9_backfill: '9. Засыпка',
-  stage_10_surface: '10. Восстановление покрытия',
-}
-
-const METHOD_LABELS: Record<string, string> = {
-  mole: 'Прокол',
-  hand: 'Вручную',
-  excavator: 'Экскаватор',
-  trencher: 'Траншеекопатель',
-  documentation: 'Документация',
 }
 
 export function WorkEntryCard({ entry, onView }: WorkEntryCardProps) {

@@ -10,6 +10,7 @@ import type { WorkEntry } from '@/types/models'
 import { useState } from 'react'
 import { WorkEntryStatus } from './work-entry-status'
 import { useAuth } from '@/lib/hooks/use-auth'
+import { STAGE_LABELS, METHOD_LABELS } from '@/lib/constants/stages'
 
 interface WorkEntryDetailProps {
   entry: WorkEntry
@@ -21,26 +22,6 @@ interface WorkEntryDetailProps {
 }
 
 // Stage code labels in Russian
-const STAGE_LABELS: Record<string, string> = {
-  stage_1_marking: 'Разметка',
-  stage_2_excavation: 'Вскопка/Экскавация',
-  stage_3_conduit: 'Прокладка защитной трубы',
-  stage_4_cable: 'Прокладка кабеля',
-  stage_5_splice: 'Сплайсинг/Соединение',
-  stage_6_test: 'Тестирование',
-  stage_7_connect: 'Подключение',
-  stage_8_final: 'Финальная проверка',
-  stage_9_backfill: 'Засыпка',
-  stage_10_surface: 'Восстановление покрытия',
-}
-
-const METHOD_LABELS: Record<string, string> = {
-  mole: 'Прокол (кроты)',
-  hand: 'Ручная копка',
-  excavator: 'Экскаватор',
-  trencher: 'Траншеекопатель',
-  documentation: 'Документация',
-}
 
 export function WorkEntryDetail({ entry, isOpen, onClose, onEdit, onDelete, onStatusChange }: WorkEntryDetailProps) {
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null)
@@ -162,24 +143,27 @@ export function WorkEntryDetail({ entry, isOpen, onClose, onEdit, onDelete, onSt
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-3 gap-3">
-                    {entry.photos.map((photo) => (
-                      <div
-                        key={photo.id}
-                        className="relative aspect-square rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
-                        onClick={() => setSelectedPhoto(photo.url)}
-                      >
-                        <img
-                          src={photo.url}
-                          alt="Work photo"
-                          className="w-full h-full object-cover"
-                        />
-                        {photo.label && (
-                          <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-1 text-center">
-                            {photo.label}
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                    {entry.photos.map((photo) => {
+                      const photoUrl = photo.url || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23ddd" width="100" height="100"/%3E%3Ctext fill="%23999" x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle"%3EФото%3C/text%3E%3C/svg%3E'
+                      return (
+                        <div
+                          key={photo.id}
+                          className="relative aspect-square rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
+                          onClick={() => setSelectedPhoto(photo.url || null)}
+                        >
+                          <img
+                            src={photoUrl}
+                            alt="Work photo"
+                            className="w-full h-full object-cover"
+                          />
+                          {photo.label && (
+                            <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-1 text-center">
+                              {photo.label}
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
                   </div>
                 </CardContent>
               </Card>

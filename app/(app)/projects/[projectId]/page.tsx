@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { NVTCard } from '@/components/projects/nvt-card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import { ArrowLeft, Search, Loader2, AlertCircle } from 'lucide-react'
+import { ArrowLeft, Search, Loader2, AlertCircle, FileText } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { RejectedEntriesList } from '@/components/work-entries/rejected-entries-list'
 import { formatMeters, formatPercentage, formatDate } from '@/lib/utils/format'
@@ -54,14 +54,24 @@ export default function ProjectDetailPage() {
 
       {/* Header */}
       <div className="mb-8">
-        <Button
-          variant="ghost"
-          className="mb-4"
-          onClick={() => router.push('/projects')}
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Назад к проектам
-        </Button>
+        <div className="flex items-center justify-between mb-4">
+          <Button
+            variant="ghost"
+            onClick={() => router.push('/projects')}
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Назад к проектам
+          </Button>
+
+          <Button
+            variant="outline"
+            onClick={() => router.push(`/projects/${projectId}/documents`)}
+            className="flex items-center gap-2"
+          >
+            <FileText className="h-4 w-4" />
+            Документы проекта
+          </Button>
+        </div>
 
         {projectLoading ? (
           <div className="flex items-center gap-4">

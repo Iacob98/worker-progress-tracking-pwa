@@ -1,5 +1,5 @@
 import Dexie, { Table } from 'dexie'
-import type { Project, NVT, Segment, WorkEntry, Photo, SyncQueueItem } from '@/types/models'
+import type { Project, NVT, Segment, WorkEntry, Photo, SyncQueueItem, WorkerDocument, ProjectDocument, DocumentCategory } from '@/types/models'
 
 export class WorkerAppDatabase extends Dexie {
   // Tables
@@ -9,6 +9,9 @@ export class WorkerAppDatabase extends Dexie {
   work_entries!: Table<WorkEntry, string>
   photos!: Table<Photo, string>
   sync_queue!: Table<SyncQueueItem, string>
+  worker_documents!: Table<WorkerDocument, string>
+  project_documents!: Table<ProjectDocument, string>
+  document_categories!: Table<DocumentCategory, string>
 
   constructor() {
     super('WorkerAppDB')
@@ -31,6 +34,17 @@ export class WorkerAppDatabase extends Dexie {
     // Version 3: Add rejectedAt index to work_entries for filtering rejected entries
     this.version(3).stores({
       work_entries: 'id, projectId, userId, segmentId, approved, rejectedAt, date'
+    })
+
+    // Version 4: Add worker_documents table for offline access
+    this.version(4).stores({
+      worker_documents: 'id, userId, category, createdAt'
+    })
+
+    // Version 5: Add project_documents and document_categories for offline access
+    this.version(5).stores({
+      project_documents: 'id, projectId, categoryCode, isRequired, createdAt',
+      document_categories: 'id, code, categoryType'
     })
   }
 }
@@ -58,7 +72,10 @@ export async function getCacheStatus() {
     segments: await db.segments.count(),
     work_entries: await db.work_entries.count(),
     photos: await db.photos.count(),
-    sync_queue: await db.sync_queue.count()
+    sync_queue: await db.sync_queue.count(),
+    worker_documents: await db.worker_documents.count(),
+    project_documents: await db.project_documents.count(),
+    document_categories: await db.document_categories.count()
   }
 
   return counts
@@ -70,5 +87,8 @@ export async function clearAllCache() {
   await db.segments.clear()
   await db.work_entries.clear()
   await db.photos.clear()
+  await db.worker_documents.clear()
+  await db.project_documents.clear()
+  await db.document_categories.clear()
   // Don't clear sync queue - it contains unsent data
 }

@@ -3,11 +3,12 @@
 import { useParams, useRouter } from 'next/navigation'
 import { useNVT, useSegments, useHouses } from '@/lib/hooks/use-nvt'
 import { useProject } from '@/lib/hooks/use-projects'
+import { useNVTPlan } from '@/lib/hooks/use-nvt-plan'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import { ArrowLeft, MapPin, Box, Home, Loader2, AlertCircle, Plus } from 'lucide-react'
+import { ArrowLeft, MapPin, Box, Home, Loader2, AlertCircle, Plus, FileText, Eye } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { formatMeters, formatPercentage } from '@/lib/utils/format'
 import { calculateProgress } from '@/lib/utils/calculations'
@@ -24,6 +25,16 @@ export default function NVTDetailPage() {
   const { data: nvt, isLoading: nvtLoading } = useNVT(nvtId)
   const { data: segments, isLoading: segmentsLoading } = useSegments(nvtId)
   const { data: houses, isLoading: housesLoading } = useHouses(nvtId)
+  const { data: nvtPlan, isLoading: planLoading } = useNVTPlan(nvtId)
+
+  // Debug logging for NVT plan
+  console.log('🔍 NVT Plan Debug:', {
+    nvtId,
+    planLoading,
+    hasPlanData: !!nvtPlan,
+    planFileUrl: nvtPlan?.plan_file_url,
+    fullPlanData: nvtPlan
+  })
 
   const progress = nvt ? calculateProgress(nvt.completedLengthM, nvt.totalLengthM) : 0
 
@@ -95,6 +106,37 @@ export default function NVTDetailPage() {
             <div className="flex items-center gap-2 text-muted-foreground">
               <MapPin className="h-4 w-4" />
               <span>{nvt.address}</span>
+            </div>
+          )}
+
+          {/* Installation Plan Button */}
+          {nvtPlan?.plan_file_url && (
+            <div className="mt-4 p-4 border rounded-lg bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 mt-1">
+                  <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-medium text-sm mb-1">
+                    План установки
+                  </h3>
+                  {nvtPlan.plan_description && (
+                    <p className="text-xs text-muted-foreground mb-3">
+                      {nvtPlan.plan_description}
+                    </p>
+                  )}
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={() => window.open(nvtPlan.plan_file_url!, '_blank', 'noopener,noreferrer')}
+                    className="gap-2 w-full sm:w-auto bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700"
+                    disabled={planLoading}
+                  >
+                    <Eye className="h-4 w-4" />
+                    {nvtPlan.plan_title || 'Просмотр плана'}
+                  </Button>
+                </div>
+              </div>
             </div>
           )}
         </div>

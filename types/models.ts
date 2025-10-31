@@ -46,6 +46,15 @@ export interface NVT {
   segmentCount: number
   segments?: Segment[]
   houses?: House[]
+  // Installation plan fields (from Admin API)
+  planTitle?: string | null
+  planDescription?: string | null
+  planType?: 'network_design' | 'technical_drawing' | 'site_layout' | 'installation_guide' | 'as_built' | 'other' | null
+  planFilename?: string | null
+  planFileSize?: number | null
+  planFileUrl?: string | null  // Public URL for viewing/downloading
+  planFilePath?: string | null  // Storage path
+  planUploadedAt?: string | null
   createdAt: string
   updatedAt: string
 }
@@ -63,7 +72,7 @@ export interface Segment {
   status: 'open' | 'in_progress' | 'done'
 }
 
-// Stage codes from admin DB - expandable in future
+// Stage codes from admin DB - aligned with technical specification
 export type StageCode =
   | 'stage_1_marking'
   | 'stage_2_excavation'
@@ -71,10 +80,7 @@ export type StageCode =
   | 'stage_4_cable'
   | 'stage_5_splice'
   | 'stage_6_test'
-  | 'stage_7_connect'
-  | 'stage_8_final'
   | 'stage_9_backfill'
-  | 'stage_10_surface'
 
 export type WorkMethod = 'mole' | 'hand' | 'excavator' | 'trencher' | 'documentation'
 
@@ -146,6 +152,15 @@ export interface House {
   plannedConnectionDate?: Date
   actualConnectionDate?: Date
   status?: string
+  // Connection plan fields (from Admin API)
+  planTitle?: string | null
+  planDescription?: string | null
+  planType?: 'connection_plan' | 'wiring_diagram' | 'technical_drawing' | 'installation_guide' | 'as_built' | 'other' | null
+  planFilename?: string | null
+  planFileSize?: number | null
+  planFileUrl?: string | null  // Public URL for viewing/downloading
+  planFilePath?: string | null  // Storage path
+  planUploadedAt?: string | null
   createdAt: string
   updatedAt: string
 }
@@ -203,4 +218,70 @@ export interface SyncQueueItem {
   lastError?: string
   createdAt: Date
   updatedAt: Date
+}
+
+// Worker Documents - личные документы работников
+export type WorkerDocumentCategory =
+  | 'contract'      // Договор
+  | 'certificate'   // Сертификат
+  | 'instruction'   // Инструкция
+  | 'policy'        // Политика компании
+  | 'safety'        // Техника безопасности
+  | 'training'      // Обучающие материалы
+  | 'personal'      // Личные документы
+  | 'other'         // Прочее
+
+export interface WorkerDocument {
+  id: string
+  userId: string                          // user_id in DB - владелец документа
+  filename: string                        // filename in DB - имя файла в storage
+  originalFilename: string                // original_filename in DB - оригинальное имя
+  fileSize: number                        // file_size in DB - размер в байтах
+  mimeType: string                        // mime_type in DB - MIME тип файла
+  bucketName: string                      // bucket_name in DB - всегда 'worker-documents'
+  filePath: string                        // file_path in DB - путь в storage
+  fileUrl?: string | null                 // file_url in DB - публичный URL (если есть)
+  category: WorkerDocumentCategory        // category in DB - категория документа
+  title: string                           // title in DB - название документа
+  description?: string | null             // description in DB - описание
+  metadata?: Record<string, any>          // metadata in DB - дополнительные данные (jsonb)
+  createdAt: string                       // created_at in DB
+  updatedAt: string                       // updated_at in DB
+}
+
+// Project Documents - документы проектов (read-only для workers)
+// Используют существующие таблицы из Admin: documents, project_documents, document_categories
+export interface ProjectDocument {
+  id: string
+  projectId: string                       // project_id in documents table
+  filename: string                        // filename in DB
+  originalFilename: string | null         // original_filename in DB
+  filePath?: string | null                // file_path from Admin API - download URL path
+  fileType: string | null                 // file_type in DB (MIME type)
+  fileSize: number | null                 // file_size in DB (bytes)
+  documentType: string                    // document_type in DB ('general', 'plan', 'certificate', etc.)
+  categoryId: string | null               // category_id in DB - FK to document_categories
+  categoryCode: string | null             // code from document_categories table
+  categoryName: string | null             // name_ru from document_categories table
+  categoryType: 'company' | 'legal' | null // category_type from document_categories
+  description: string | null              // description in DB
+  uploadDate: string                      // upload_date in DB
+  uploadedBy: string | null               // uploaded_by in DB - FK to users
+  isActive: boolean                       // is_active in DB
+  documentRole: string | null             // document_role from project_documents (e.g., 'reference', 'required')
+  isRequired: boolean                     // is_required from project_documents
+  dueDate: string | null                  // due_date from project_documents
+  createdAt: string                       // created_at in DB
+  updatedAt: string                       // updated_at in DB
+}
+
+// Document Category - категории документов из БД (16 категорий)
+export interface DocumentCategory {
+  id: string
+  code: string                            // code in DB - уникальный код категории
+  nameRu: string                          // name_ru in DB - русское название
+  nameEn: string | null                   // name_en in DB - английское название
+  nameDe: string | null                   // name_de in DB - немецкое название
+  categoryType: 'company' | 'legal'       // category_type in DB
+  createdAt: string                       // created_at in DB
 }
