@@ -196,7 +196,7 @@ export function useDocumentCategories(): UseQueryResult<DocumentCategory[], Erro
  * Returns a function that fetches from Admin API or public storage
  */
 export function useDownloadProjectDocument() {
-  return async (document: ProjectDocument, filePath?: string): Promise<void> => {
+  return async (doc: ProjectDocument, filePath?: string): Promise<void> => {
     try {
       const adminApiUrl = process.env.NEXT_PUBLIC_ADMIN_API_URL || 'http://localhost:3000'
 
@@ -210,7 +210,7 @@ export function useDownloadProjectDocument() {
         downloadUrl = `${adminApiUrl}${filePath}`
       } else {
         // Fallback to Supabase Storage
-        downloadUrl = `https://oijmohlhdxoawzvctnxx.supabase.co/storage/v1/object/public/project-documents/${document.filename}`
+        downloadUrl = `https://oijmohlhdxoawzvctnxx.supabase.co/storage/v1/object/public/project-documents/${doc.filename}`
       }
 
       console.log('📥 Downloading from:', downloadUrl)
@@ -226,12 +226,12 @@ export function useDownloadProjectDocument() {
 
       // Create blob URL and trigger download
       const url = URL.createObjectURL(blob)
-      const link = document.createElement('a')
+      const link = window.document.createElement('a')
       link.href = url
-      link.download = document.originalFilename || document.filename
-      document.body.appendChild(link)
+      link.download = doc.originalFilename || doc.filename
+      window.document.body.appendChild(link)
       link.click()
-      document.body.removeChild(link)
+      window.document.body.removeChild(link)
       URL.revokeObjectURL(url)
     } catch (error) {
       console.error('Download failed:', error)
